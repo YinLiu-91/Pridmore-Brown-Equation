@@ -25,11 +25,12 @@ Ref:[2] A well-posed boundary condition for acoustic liners in straight ducts wi
 m = 24                  # 模态阶数
 k = 31.0                # 无量纲波数
 M = 0.5                 # 马赫数
-kmn = -44.2+ 1.1j     # Ref[2] a,b 轴向波数（可取复数）
-# kmn = -17.6 - 21.0j     # Ref[2] c,d 轴向波数（可取复数）
+# kmn = -44.2+ 1.1j     # Ref[2] a,b 轴向波数（可取复数）
+kmn = -17.6 - 21.0j     # Ref[2] c,d 轴向波数（可取复数）
 
 
 Z = 2.0+0.6j          # 壁面阻抗（复数）
+omega = k             # 角频率，若使用不同无量纲化请自行修改
 r_min = 1.0e-4          # 避免 r=0 的奇点，从一个很小的半径开始
 r_max = 1.0
 delta=0.0002
@@ -51,12 +52,13 @@ def u0(r, delta):
 def ode(r, y):
     p = y[0] + 1j * y[1]
     dp = y[2] + 1j * y[3]
-
-    coeff = (k - u0(r,delta) * kmn) ** 2 - kmn ** 2
+    # print("dp[0]:",dp[0])
+    # 这里用的M，不是 u0(r,delta)
+    coeff = (k - M * kmn) ** 2 - kmn ** 2
     # 添加dM/dr项目
     dMdrPart=0.0
     if  isShearFlow:
-        dMdrPart=2.0*kmn/(k - u0(r,delta)*kmn)*du0dr(r,delta)
+        dMdrPart=2.0*kmn/(k - M*kmn)*du0dr(r,delta) # 这里用的M，不是 u0(r,delta)
     d2p = -(1.0 / r+dMdrPart) * dp - (coeff - m ** 2 / r ** 2) * p
 
     return np.vstack([
@@ -75,8 +77,12 @@ def boundary_conditions(ya, yb):
     # r = r_max: Ingard-Myers 边界条件
     p_wall = yb[0] + 1j * yb[1]
     dp_wall = yb[2] + 1j * yb[3]
-    impedance_condition = dp_wall +  1.0* (k - M * kmn) / (1j*k* Z) * p_wall
+    # dp_wall=1.0
 
+    # 声衬边界（Ingard-Myers）：dp/dr + i (k - M k_{mn}) (ω - u_0 k_{mn}) / (ω Z) p = 0
+    # u_wall = u0(r_max, delta) if isShearFlow else M
+    # impedance_condition = dp_wall + (k - M * kmn) * ((omega - u_wall * kmn) / (1j*omega * Z)) * p_wall
+    impedance_condition = dp_wall - (k - M * kmn)**2 / (1j*k* Z )* p_wall
 
     """
     下面参考的公式来自于此
@@ -114,7 +120,7 @@ y_guess = np.vstack([
 # ------------------------------------------------------------------------------------
 # 调用 solve_bvp
 # ------------------------------------------------------------------------------------
-sol = solve_bvp(ode, boundary_conditions, r, y_guess, tol=1e-6, max_nodes=2000)
+sol = solve_bvp(ode, boundary_conditions, r, y_guess, tol=1e-15, max_nodes=1200000)
 
 if not sol.success:
     raise RuntimeError(f"solve_bvp 未收敛: {sol.message}")
