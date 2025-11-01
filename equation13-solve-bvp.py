@@ -39,20 +39,24 @@ isShearFlow=True
 # y = [Re(p), Im(p), Re(dp/dr), Im(dp/dr)]
 # ------------------------------------------------------------------------------------
 
-# Ref[1] 公式(24)的对r的导数
+# Ref[2] 公式(14)的对r的导数
 def du0dr(r, delta):
-    return M * ((1.0-np.tanh((1.0 - r) / delta)**2)*(-1.0/delta) + (1 - np.tanh(1.0 / delta)) * (1.0  -4.0* r-(1.0+np.tanh(1.0/delta))/delta ))
+    return M * ((1.0-np.tanh((1.0 - r) / delta)**2)*(-1.0/delta) + (1 - np.tanh(1.0 / delta)) * (-2.0*((1.0+np.tanh(1.0/delta))/delta+1.0 )*r+(1.0+np.tanh(1.0/delta))/delta))
+
+# Ref[1] 公式有误，使用Ref[2]的公式，应当*r，而不是+r
+def u0(r, delta):
+    return M * (np.tanh((1 - r) / delta) + (1 - r) * (1 - np.tanh(1 / delta)) * ((1 + np.tanh(1 / delta)) / delta *r + (1 + r)))
 
 
 def ode(r, y):
     p = y[0] + 1j * y[1]
     dp = y[2] + 1j * y[3]
 
-    coeff = (k - M * kmn) ** 2 - kmn ** 2
+    coeff = (k - u0(r,delta) * kmn) ** 2 - kmn ** 2
     # 添加dM/dr项目
     dMdrPart=0.0
     if  isShearFlow:
-        dMdrPart=2.0*kmn/(k - M*kmn)*du0dr(r,delta)
+        dMdrPart=2.0*kmn/(k - u0(r,delta)*kmn)*du0dr(r,delta)
     d2p = -(1.0 / r+dMdrPart) * dp - (coeff - m ** 2 / r ** 2) * p
 
     return np.vstack([
@@ -71,14 +75,14 @@ def boundary_conditions(ya, yb):
     # r = r_max: Ingard-Myers 边界条件
     p_wall = yb[0] + 1j * yb[1]
     dp_wall = yb[2] + 1j * yb[3]
-    impedance_condition = dp_wall - 1j * (k - M * kmn) / Z * p_wall
+    impedance_condition = dp_wall +  1.0* (k - M * kmn) / (1j*k* Z) * p_wall
 
 
     """
     下面参考的公式来自于此
     A well-posed boundary condition for acoustic liners in straight ducts with flow
     """
-    # impedance_condition = dp_wall + (k - M * kmn)**2 / (1j*k* Z )* p_wall
+    # impedance_condition = dp_wall - (k - M * kmn)**2 / (1j*k* Z )* p_wall
 
     return np.array([
         bc_center_real,
