@@ -40,7 +40,7 @@ def equation(kmn):
     delta_i1 = delta_I1(kmn, delta)
     lhs = 1j * k * Z * (1 - (kmn**2 + m**2) * delta * delta_i1 * jv(m, alpha) / (alpha * jvp(m, alpha)))
     # 公式22中除数中有kmn,但是交叉验证后为alpha,(见A well-posed boundary condition for acoustic liners in
-    # straight ducts with flow文中公式8下面的公式，同除以alphaJ‘)
+    # straight ducts with flow文中公式8下面的公式，同除以alphaJ‘),并且下面为jvp，上面为jv
     print("delta_i0:", delta_i0)
     print("delta_i1:", delta_i1)
     rhs = (k - M * kmn)**2 * (jv(m, alpha) / (alpha * jvp(m, alpha)) - delta * delta_i0)
@@ -67,6 +67,7 @@ alpha = alpha_solution
 delta_i0 = delta_I0(kmn_solution, delta)
 delta_i1 = delta_I1(kmn_solution, delta)
 lhs = 1j * k * Z * (1 - (kmn_solution**2 + m**2) * delta * delta_i1 * jv(m, alpha) / (alpha * jvp(m, alpha)))
+# 
 rhs = (k - M * kmn_solution)**2 * (jv(m, alpha) / (alpha * jvp(m, alpha)) - delta * delta_i0)
 print("LHS:", lhs)
 print("RHS:", rhs)
