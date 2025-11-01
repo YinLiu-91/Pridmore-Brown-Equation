@@ -1,3 +1,5 @@
+# 文献 ：On the prediction of far-field fan noise attenuation due to liners
+#       considering uniform and shear flows
 import numpy as np
 from scipy.special import jv, jvp
 from scipy.optimize import fsolve
@@ -7,6 +9,7 @@ m = 24          # 模态阶数
 k = 31.0        # 波数
 M = 0.5         # 马赫数
 Z = 3 - 0.5j    # 复阻抗
+a=0.5          # 管道半径
 
 # 非线性方程（公式20）
 def equation(kmn):
@@ -15,8 +18,8 @@ def equation(kmn):
     if alpha_squared.real < 0:
         return [1e6, 1e6]
     alpha = np.sqrt(alpha_squared)
-    lhs = alpha * jvp(m, alpha) / jv(m, alpha)
-    rhs = -1j * k / Z * (1 - M * kmn / k)**2
+    rhs = alpha * jvp(m, alpha) / jv(m, alpha)
+    lhs = -1j * k / Z * (1 - M * kmn / k)**2
     res = lhs - rhs
     return [res.real, res.imag]
 
@@ -41,3 +44,17 @@ print("LHS:", lhs)
 print("RHS:", rhs)
 print("残差:", lhs - rhs)
 
+Amn=1.0
+
+# 给出沿着r与x方向上的压力分部
+r=np.linspace(0,a,100)
+x=np.linspace(0,1,100)
+# z
+p=Amn*jv(m,alpha_solution*(a-r[:,np.newaxis]))*np.exp(-1j*kmn_solution*x[np.newaxis,:])
+# import matplotlib.pyplot as plt
+# plt.imshow(np.real(p),extent=[0,1,0,a],aspect='auto')
+# plt.colorbar()
+# plt.title('Pressure Distribution Re(p) along r and x')
+# plt.xlabel('x')
+# plt.ylabel('r')
+# plt.show()

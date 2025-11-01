@@ -1,4 +1,5 @@
-
+# 文献 ：On the prediction of far-field fan noise attenuation due to liners
+#       considering uniform and shear flows
 import numpy as np
 from scipy.special import jv, jvp
 from scipy.optimize import fsolve
@@ -9,8 +10,8 @@ m = 24          # 模态阶数
 k = 31.0        # 波数
 M = 0.5         # 马赫数
 Z = 3 - 0.5j    # 复阻抗
-delta = 0.01    # 边界层厚度
-
+delta = 0.0000000000    # 边界层厚度
+a=1.0          # 管道半径
 # 流速剖面
 def u0(r, delta):
     return M * (np.tanh((1 - r) / delta) + (1 - r) * (1 - np.tanh(1 / delta)) * ((1 + np.tanh(1 / delta)) / delta + r + (1 + r)))
@@ -23,10 +24,10 @@ def integrand_i1(r, kmn, delta):
     return 1 - ((k - M * kmn)**2) / ((k - u0(r, delta) * kmn)**2)
 
 def delta_I0(kmn, delta):
-    return quad(integrand_i0, 0, 1, args=(kmn, delta))[0]
+    return 0.0 if delta==0.0 else  quad(integrand_i0, 0, a, args=(kmn, delta))[0]
 
 def delta_I1(kmn, delta):
-    return quad(integrand_i1, 0, 1, args=(kmn, delta))[0]
+    return 0.0 if delta==0.0 else quad(integrand_i1, 0, a, args=(kmn, delta))[0]
 
 # 非线性方程
 def equation(kmn):
@@ -38,28 +39,50 @@ def equation(kmn):
     delta_i0 = delta_I0(kmn, delta)
     delta_i1 = delta_I1(kmn, delta)
     lhs = 1j * k * Z * (1 - (kmn**2 + m**2) * delta * delta_i1 * jv(m, alpha) / (alpha * jvp(m, alpha)))
-    rhs = (k - M * kmn)**2 * (jvp(m, alpha) / (alpha * jv(m, alpha)) - delta * delta_i0)
+    # 公式22中除数中有kmn,但是交叉验证后为alpha,(见A well-posed boundary condition for acoustic liners in
+    # straight ducts with flow文中公式8下面的公式，同除以alphaJ‘)
+    print("delta_i0:", delta_i0)
+    print("delta_i1:", delta_i1)
+    rhs = (k - M * kmn)**2 * (jv(m, alpha) / (alpha * jvp(m, alpha)) - delta * delta_i0)
     res = lhs - rhs
     return [res.real, res.imag]
 
 # 初值
 k0 = k / (1 + M)  # 均匀流近似
-initial_guess = [k0, 0.1]
+# initial_guess = [k0, 0.1]
+initial_guess = [7.2278,-2.4025]
 
 # 求解
 sol = fsolve(equation, initial_guess)
 kmn_solution = sol[0] + 1j * sol[1]
 alpha_solution = np.sqrt((k - M * kmn_solution)**2 - kmn_solution**2)
 
+
 print(f"公式(23)解得：")
 print(f"k_mn = {kmn_solution:.4f}")
 print(f"α = {alpha_solution:.4f}")
 # 验证
 alpha = alpha_solution
+
 delta_i0 = delta_I0(kmn_solution, delta)
 delta_i1 = delta_I1(kmn_solution, delta)
 lhs = 1j * k * Z * (1 - (kmn_solution**2 + m**2) * delta * delta_i1 * jv(m, alpha) / (alpha * jvp(m, alpha)))
-rhs = (k - M * kmn_solution)**2 * (jvp(m, alpha) / (alpha * jv(m, alpha)) - delta * delta_i0)
+rhs = (k - M * kmn_solution)**2 * (jv(m, alpha) / (alpha * jvp(m, alpha)) - delta * delta_i0)
 print("LHS:", lhs)
 print("RHS:", rhs)
 print("残差:", lhs - rhs)
+
+Amn=1.0
+
+# 给出沿着r与x方向上的压力分部
+r=np.linspace(0,a,100)
+x=np.linspace(0,1,100)
+# z
+p=Amn*jv(m,alpha_solution*(a-r[:,np.newaxis]))*np.exp(1j*kmn_solution*x[np.newaxis,:])
+# import matplotlib.pyplot as plt
+# plt.imshow(np.real(p),extent=[0,1,0,a],aspect='auto')
+# plt.colorbar()
+# plt.title('Pressure Distribution Re(p) along r and x')
+# plt.xlabel('x')
+# plt.ylabel('r')
+# plt.show()
