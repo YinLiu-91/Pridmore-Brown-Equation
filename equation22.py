@@ -9,13 +9,20 @@ from scipy.integrate import quad
 m = 24          # 模态阶数
 k = 31.0        # 波数
 M = 0.5         # 马赫数
-Z = 3 - 0.5j    # 复阻抗
-delta = 0.0000000000    # 边界层厚度
+Z = 2 + 0.6j    # 复阻抗
+delta = 0.0002    # 边界层厚度
 a=1.0          # 管道半径
 # 流速剖面
-def u0(r, delta):
+def u01(r, delta):
     return M * (np.tanh((1 - r) / delta) + (1 - r) * (1 - np.tanh(1 / delta)) * ((1 + np.tanh(1 / delta)) / delta + r + (1 + r)))
-
+#ref[2]中的速度剖面
+def u0(r, delta):
+    return M * (
+        np.tanh((1 - r) / delta)
+        + (1 - r)
+        * (1 - np.tanh(1 / delta))
+        * ((1 + np.tanh(1 / delta)) / delta * r + (1 + r))
+    )
 # 计算 δI0 和 δI1
 def integrand_i0(r, kmn, delta):
     return 1 - ((k - u0(r, delta) * kmn)**2) / ((k - M * kmn)**2)
@@ -50,7 +57,11 @@ def equation(kmn):
 # 初值
 k0 = k / (1 + M)  # 均匀流近似
 # initial_guess = [k0, 0.1]
-initial_guess = [7.2278,-2.4025]
+# initial_guess = [7.2278,-2.4025]
+
+# 下面两个ref[2]中的kmn都作为初值，都能得到与初始值相近的解
+initial_guess = [-44.2 ,1.1] # ref[2] figure 1a
+initial_guess = [-17.6 ,- 21.0] # ref[2] figure 1c
 
 # 求解
 sol = fsolve(equation, initial_guess)
