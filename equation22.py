@@ -8,15 +8,18 @@ from scipy.integrate import quad
 # 参数
 m = 24          # 模态阶数
 k = 31.0        # 波数
-M = 0.5         # 马赫数
-Z = 2 + 0.6j    # 复阻抗
+# M = -0.5         # 马赫数 Ref[3]
+M = 0.5         # 马赫数 Ref[1][2]
+# Z = 3 - 0.5j    # 复阻抗 Ref[3]
+Z = 2 + 0.6j    # 复阻抗 Ref[1][2]
+# delta = 0.02    # 边界层厚度
 delta = 0.0002    # 边界层厚度
 a=1.0          # 管道半径
-# 流速剖面
-def u01(r, delta):
+# 流速剖面,Ref[1],Ref[3]都是这个形式
+def u0(r, delta):
     return M * (np.tanh((1 - r) / delta) + (1 - r) * (1 - np.tanh(1 / delta)) * ((1 + np.tanh(1 / delta)) / delta + r + (1 + r)))
 #ref[2]中的速度剖面
-def u0(r, delta):
+def u01(r, delta):
     return M * (
         np.tanh((1 - r) / delta)
         + (1 - r)
@@ -41,7 +44,9 @@ def equation(kmn):
     kmn = kmn[0] + 1j * kmn[1]
     alpha_squared = (k - M * kmn)**2 - kmn**2
     if alpha_squared.real < 0:
-        return [1e6, 1e6]
+        pass
+        print("alpha_squared.real < 0")
+        # return [1e6, 1e6]
     alpha = np.sqrt(alpha_squared)
     delta_i0 = delta_I0(kmn, delta)
     delta_i1 = delta_I1(kmn, delta)
@@ -61,10 +66,11 @@ k0 = k / (1 + M)  # 均匀流近似
 
 # 下面两个ref[2]中的kmn都作为初值，都能得到与初始值相近的解
 initial_guess = [-44.2 ,1.1] # ref[2] figure 1a
-initial_guess = [-17.6 ,- 21.0] # ref[2] figure 1c
+# initial_guess = [-17.6 ,- 21.0] # ref[2] figure 1c
 
 # 求解
 sol = fsolve(equation, initial_guess)
+print("sol:", sol)
 kmn_solution = sol[0] + 1j * sol[1]
 alpha_solution = np.sqrt((k - M * kmn_solution)**2 - kmn_solution**2)
 
@@ -91,10 +97,10 @@ r=np.linspace(0,a,100)
 x=np.linspace(0,1,100)
 # z
 p=Amn*jv(m,alpha_solution*(a-r[:,np.newaxis]))*np.exp(1j*kmn_solution*x[np.newaxis,:])
-# import matplotlib.pyplot as plt
-# plt.imshow(np.real(p),extent=[0,1,0,a],aspect='auto')
-# plt.colorbar()
-# plt.title('Pressure Distribution Re(p) along r and x')
-# plt.xlabel('x')
-# plt.ylabel('r')
-# plt.show()
+import matplotlib.pyplot as plt
+plt.imshow(np.real(p),extent=[0,1,0,a],aspect='auto')
+plt.colorbar()
+plt.title('Pressure Distribution Re(p) along r and x')
+plt.xlabel('x')
+plt.ylabel('r')
+plt.show()

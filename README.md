@@ -9,3 +9,4 @@
 # 参考文献
 Ref:[1] On the prediction of far-field fan noise attenuation due to liners considering uniform and shear flows
 Ref:[2] A well-posed boundary condition for acoustic liners in straight ducts with flow
+Ref:[3] Impedance boundary condition in frequency domain DG code  for modelling liner effects in complicated intake ducts
