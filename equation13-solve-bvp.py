@@ -154,7 +154,7 @@ print("p_wall (normalized to 1):", p_wall)
 
 print("求解成功，最大残差 =", np.max(np.abs(sol.rms_residuals)))
 # 读取文献数据
-# 打开并读取文件
+# 打开并读取文件(把Ref[2] figure 1的数据读入，作为golden data)
 if case == "a":
     file_path = "./ref2_f1a.txt"  # Ref[2] a,b 数据文件路径
 else:
