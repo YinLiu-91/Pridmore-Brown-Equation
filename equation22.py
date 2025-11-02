@@ -65,7 +65,8 @@ k0 = k / (1 + M)  # 均匀流近似
 # initial_guess = [7.2278,-2.4025]
 
 # 下面两个ref[2]中的kmn都作为初值，都能得到与初始值相近的解
-initial_guess = [-44.2 ,1.1] # ref[2] figure 1a
+initial_guess = [-44.2 , 1.1] # ref[2] figure 1a
+# initial_guess = [-20 ,-0.1] # ref[2] figure 1a
 # initial_guess = [-17.6 ,- 21.0] # ref[2] figure 1c
 
 # 求解
@@ -93,7 +94,7 @@ print("残差:", lhs - rhs)
 Amn=1.0
 
 # 给出沿着r与x方向上的压力分部
-r=np.linspace(0,a,100)
+r=np.linspace(0,a,200)
 x=np.linspace(0,1,100)
 # z
 p=Amn*jv(m,alpha_solution*(a-r[:,np.newaxis]))*np.exp(1j*kmn_solution*x[np.newaxis,:])
@@ -103,4 +104,15 @@ plt.colorbar()
 plt.title('Pressure Distribution Re(p) along r and x')
 plt.xlabel('x')
 plt.ylabel('r')
+plt.show()
+
+# 取r=1处沿x方向的压力分布
+x_line = np.linspace(0, 1, 100)
+print("p shape:", p.shape)
+p_line=p[0,:]
+# p_line = Amn * jvp(m, alpha_solution * (a )) * np.exp(1j * kmn_solution * x_line)
+plt.plot(x_line, np.abs(p_line))
+plt.title('Pressure Distribution Re(p) at r=1 along x')
+plt.xlabel('x')
+plt.ylabel('Re(p)')
 plt.show()
