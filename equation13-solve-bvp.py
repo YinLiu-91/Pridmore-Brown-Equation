@@ -18,7 +18,7 @@ m = 24  # 模态阶数
 k = 31.0  # 无量纲波数
 M = 0.5  # 马赫数
 
-case = "c"  # ref[2]中figure1的case是a还是c
+case = "a"  # ref[2]中figure1的case是a还是c
 if case == "a":
     kmn = -44.2 + 1.1j  # Ref[2] a,b 轴向波数（可取复数）
 else:
