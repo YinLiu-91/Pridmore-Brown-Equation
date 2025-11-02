@@ -3,8 +3,9 @@
 1. equation22.py求解带流动的Pridmore-Brown方程的轴向波数kmn，考虑了brambley边界
 1. 可以用equation22.py求kmn，将kmn带入equation13-solve-bvp.py中，求解p(r)分部
 1. equation22.py中，设置如下初始值，可以得到ref[22]中的figure1的解：
-- initial_guess = [-44.2 ,1.1] # ref[2] figure 1a
-- initial_guess = [-17.6 ,- 21.0] # ref[2] figure 1c
+   - initial_guess = [-44.2 ,1.1] # ref[2] figure 1a
+   - initial_guess = [-17.6 ,- 21.0] # ref[2] figure 1c
+1. 
 # 参考文献
 Ref:[1] On the prediction of far-field fan noise attenuation due to liners considering uniform and shear flows
 Ref:[2] A well-posed boundary condition for acoustic liners in straight ducts with flow
