@@ -1,5 +1,5 @@
 # 说明
-1. equation13-solve-bvp.py此文件根据给定的k，kmn等生成沿r的p函数，并与文献对比
+1. equation13-solve-bvp.py求解ref[1]中公式(12)(13)的过程此文件根据给定的k，kmn等生成沿r的p函数，并与文献对比
 1. equation22.py求解带流动的Pridmore-Brown方程的轴向波数kmn，考虑了brambley边界
 1. 可以用equation22.py求kmn，将kmn带入equation13-solve-bvp.py中，求解p(r)分部
 1. equation22.py中，设置如下初始值，可以得到ref[22]中的figure1的解：
